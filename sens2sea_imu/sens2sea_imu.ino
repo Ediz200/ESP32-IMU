@@ -1,6 +1,9 @@
 #include "BMI088.h"
 #include <math.h>
 
+#define RXD2 16
+#define TXD2 17
+
 /* accel object */
 Bmi088Accel accel(SPI,15);
 /* gyro object */
@@ -20,12 +23,13 @@ unsigned long millisOld;
 
 #define RAD_TO_DEG 57.2957795f
 #define SAMPLERATE_DELAY_MS (10)
-#define COMP_FILTER_ALPHA 0.05000000f
+#define COMP_FILTER_ALPHA 0.95f
 
 void setup() {
   // put your setup code here, to run once:
    int status;
   /* USB Serial to print data */
+  Serial2.begin(115200, SERIAL_8N1,RXD2,TXD2); // set baud rate
   Serial.begin(115200);
   while(!Serial) {}
   /* start the sensors */
@@ -83,6 +87,24 @@ void loop() {
     Serial.print(",");
     Serial.print("Reference-:"); 
     Serial.println(-90);
+
+    String nmeaString = String("xxHPR,") + String(thetaHat_rad * RAD_TO_DEG, 2) + String(",") + String(phiHat_rad * RAD_TO_DEG, 2) + String(",") + String(0, 2);
+    int checksum = 0;
+
+    for (int i = 0; i < nmeaString.length(); i++) {
+    checksum ^= nmeaString[i];
+    }
+
+    String checksumString = String(checksum, HEX);
+
+    if (checksumString.length() < 2) {
+    checksumString = "0" + checksumString;
+    }
+
+    String nmeaSentence= "$" + nmeaString + "*" + checksumString + "\r\n";
+  
+    Serial2.print(nmeaSentence);
+     
 
     delay(SAMPLERATE_DELAY_MS);
 
