@@ -3,6 +3,8 @@
 
 #define RXD2 16
 #define TXD2 17
+#define DE   18
+#define RE   19
 
 /* accel object */
 Bmi088Accel accel(SPI,15);
@@ -50,6 +52,11 @@ void setup() {
   }
   status = gyro.setRange(Bmi088Gyro::RANGE_1000DPS);
   status = gyro.setOdr(Bmi088Gyro::ODR_100HZ_BW_32HZ);
+
+  pinMode(DE, OUTPUT);
+  digitalWrite(DE, HIGH);
+  pinMode(RE, OUTPUT);
+  digitalWrite(RE, HIGH);
 }
 
 void loop() {
